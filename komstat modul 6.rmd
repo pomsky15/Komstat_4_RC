@@ -1,0 +1,126 @@
+---
+---
+---
+
+# ABDILLAH FIKRI ALPOME
+
+# 123450062
+
+# RC
+
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+## —— LATIHAN PRAKTIKUM KOMSTAT MODUL 6 ——
+
+## ————– Resampling Methods: Bootstrap —————
+
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+### NOMOR 1
+
+#### Buatlah 30 data dengan mean 65 dan standar deviasi 1.25. Lalu gunakan teknik bootstrap untuk memperkirakan interval kepercayaan 95% untuk rata-rata data tersebut!
+
+```{r}
+set.seed(123)
+
+# Membuat 30 data random dengan mean=65 dan sd=1.25
+data <- rnorm(30, mean = 65, sd = 1.25)
+
+# Fungsi bootstrap
+n_boot <- 2000
+boot_means <- replicate(n_boot, mean(sample(data, replace = TRUE)))
+
+# Menentukan interval kepercayaan 95%
+ci_95 <- quantile(boot_means, c(0.025, 0.975))
+
+mean_asli <- mean(data)
+ci_95
+mean_asli
+
+```
+
+#### Pada bagian ini dibuat 30 data acak yang mengikuti distribusi normal dengan mean 65 dan standar deviasi 1.25. Kemudian dilakukan proses bootstrap sebanyak 2000 kali untuk mengambil sampel acak dengan pengembalian, menghitung nilai rata-rata tiap sampel, dan menghasilkan distribusi rata-rata bootstrap. Interval kepercayaan 95% diperoleh dengan mengambil nilai kuantil 2.5% dan 97.5% dari distribusi tersebut. Interval ini menunjukkan rentang kemungkinan nilai mean populasi sebenarnya berdasarkan sampel yang diperoleh.
+
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+### NOMOR 2
+
+#### Misalkan terdapat dataset yang berisi data jam belajar (x) dan skor ujian (y) dari 10 mahasiswa yang diukur. Jam belajar ={1, 2, 3, 4, 5, 6, 7, 8, 9, 10} Skor ujian ={55, 60, 65, 70, 75, 80, 85, 90, 95, 100} Gunakan teknik bootstrap untuk memperkirakan interval kepercayaan 95% untuk koefisien regresi dari model linear 𝑦=𝛽0+𝛽1𝑥 ! (lakukan iterasi sebanyak 2000 kali)!
+
+```{r}
+set.seed(123)
+
+# Data yang diberikan
+x <- 1:10
+y <- c(55, 60, 65, 70, 75, 80, 85, 90, 95, 100)
+
+# Model awal
+model <- lm(y ~ x)
+
+# Bootstrap
+n_boot <- 2000
+boot_coef <- replicate(n_boot, {
+  idx <- sample(1:length(x), replace = TRUE)
+  coef(lm(y[idx] ~ x[idx]))
+})
+
+
+coef(model)
+```
+
+```{r}
+
+ci_beta0 <- quantile(boot_coef[1,], c(0.025, 0.975))
+ci_beta1 <- quantile(boot_coef[2,], c(0.025, 0.975))
+
+
+ci_beta0
+
+ci_beta1
+
+```
+
+#### Pada nomor ini digunakan dataset jam belajar sebagai variabel prediktor dan skor ujian sebagai variabel respon, lalu dibangun model regresi linier. Metode bootstrap dilakukan dengan mengambil sampel acak berulang sebanyak 2000 kali dan menghitung ulang koefisien regresi dari setiap sampel bootstrap. Dengan cara ini diperoleh sebaran nilai koefisien β₀ dan β₁, sehingga interval kepercayaan bootstrap 95% dapat dihitung berdasarkan kuantil distribusi tersebut untuk memberikan estimasi parameter yang lebih robust.
+
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+### NOMOR 3
+
+#### Gunakan data iris.
+
+#### a) Pilih variabel Sepal.Length dari spesies setosa.
+
+```{r}
+set.seed(123)
+
+data_setosa <- subset(iris, Species == "setosa")$Sepal.Length
+data_setosa
+```
+
+#### b) Hitung nilai median sampel.
+
+```{r}
+median_sample <- median(data_setosa)
+median_sample
+```
+
+#### c) Gunakan bootstrap dengan 2000 replikasi untuk memperkirakan sebaran median.
+
+```{r}
+n_boot <- 2000
+
+boot_medians <- replicate(n_boot, median(sample(data_setosa, replace = TRUE)))
+boot_medians
+```
+
+#### d) Bandingkan hasil median bootstrap dengan median sampel.
+
+```{r}
+ci_median <- quantile(boot_medians, c(0.025, 0.975))
+
+ci_median
+```
+
+#### Pada nomor ini data difokuskan pada nilai Sepal.Length dari spesies setosa dalam dataset iris. Nilai median sampel dihitung sebagai ukuran pemusatan awal. Proses bootstrap digunakan untuk menghasilkan distribusi nilai median dengan mengambil sampel data secara acak dengan pengembalian sebanyak 2000 kali. Dengan distribusi bootstrap ini, interval kepercayaan 95% untuk median dihitung dan kemudian dibandingkan dengan median sampel asli untuk melihat apakah median sampel merupakan estimasi yang stabil.
+
+\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
