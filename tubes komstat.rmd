@@ -1,0 +1,123 @@
+### Mengimport Data
+
+```{r}
+pengeluaran_perkapita <- read.csv("C:/Users/ABDILLAH FIKRI POME/Downloads/sumbagselpengeluaranperkapita_2023.csv")
+data_miskin <- read.csv("C:/Users/ABDILLAH FIKRI POME/Downloads/Persentase_Penduduk_Miskin.csv")
+
+# Cek data
+head(pengeluaran_perkapita)
+head(data_miskin)
+
+View(data_miskin)
+```
+
+### Satukan Data Berdasarkan Nama Kabupaten/Kota
+
+```{r}
+# Sesuaikan nama kolom untuk join
+names(data_miskin)[1] <- "Kabupaten.Kota.1"
+names(pengeluaran_perkapita)[2] <- "Kabupaten.Kota"
+
+# Merge kedua data
+data_final <- merge(pengeluaran_perkapita,
+                    data_miskin,
+                    by="Kabupaten.Kota",
+                    all.x=TRUE)
+
+# Lihat hasil gabungan
+View(data_final)
+
+```
+
+### Metode Perulangan (Looping)
+
+```{r}
+cat("=== HASIL PERULANGAN DATA ===\n")
+for(i in 1:nrow(data_final)){
+  cat(i, ".", data_final$Kabupaten.Kota[i], 
+      "- Pengeluaran:", data_final$Pengeluaran.Perkapita.untuk.Makanan..persen.[i], 
+      "- Kemiskinan:", data_final$persentase_penduduk_miskin[i], "\n")
+}
+
+```
+
+### Metode Percabangan (If-Else Classification) 
+
+### Kita kategorikan kondisi daerah berdasarkan **persentase kemiskinan**.
+
+-    `< 10%` → **Rendah**
+
+-    `10–15%` → **Sedang**
+
+-    `> 15%` → **Tinggi**
+
+```{r}
+data_final$kategori_kemiskinan <- ""
+
+for(i in 1:nrow(data_final)){
+  if(data_final$persentase_penduduk_miskin[i] < 10){
+    data_final$kategori_kemiskinan[i] <- "Rendah"
+  } else if(data_final$persentase_penduduk_miskin[i] <= 15){
+    data_final$kategori_kemiskinan[i] <- "Sedang"
+  } else {
+    data_final$kategori_kemiskinan[i] <- "Tinggi"
+  }
+}
+
+View(data_final)
+```
+
+--------------------------------------------------------------------------------------------------------------------
+
+## K-Means Clustering
+
+### Normalisasi data
+
+```{r}
+data_cluster <- data_final[, c("Pengeluaran.Perkapita.untuk.Makanan..persen.",
+                               "persentase_penduduk_miskin")]
+
+data_scaled <- scale(data_cluster)
+```
+
+### Tentukan jumlah cluster terbaik (Elbow Method)
+
+```{r}
+set.seed(123)
+wss <- numeric(10)
+
+for (k in 1:10) {
+  km <- kmeans(data_scaled, centers=k)
+  wss[k] <- km$tot.withinss
+}
+
+plot(1:10, wss, type="b", pch=19,
+     main="Elbow Plot Pemilihan K",
+     xlab="Jumlah Cluster K",
+     ylab="Within Sum of Squares")
+
+```
+
+Biasanya titik siku menentukan jumlah cluster optimal (misalnya K=3).
+
+### Jalankan K-Means
+
+```{r}
+set.seed(123)
+kmeans_result <- kmeans(data_scaled, centers=3, nstart=25)
+
+data_final$cluster <- kmeans_result$cluster
+
+View(data_final)
+```
+
+### Visualisasi Cluster
+
+```{r}
+plot(data_scaled,
+     col=data_final$cluster,
+     pch=19,
+     main="Cluster Pengeluaran Perkapita vs Persentase Kemiskinan")
+
+points(kmeans_result$centers, col=1:3, pch=8, cex=3)
+```
